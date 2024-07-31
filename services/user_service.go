@@ -6,7 +6,7 @@ import (
 )
 
 type UserService interface {
-	RegisterUser(user models.User) (int,error)
+	RegisterUser(user models.User) (int, error)
 }
 
 type userService struct {
@@ -17,7 +17,7 @@ func NewUserService(userRepo repositories.UserRepository) UserService {
 	return &userService{userRepo: userRepo}
 }
 
-func (s *userService) RegisterUser(user models.User) (int,error) {
-	// Business logic, e.g., hashing password
+func (s *userService) RegisterUser(user models.User) (int, error) {
+	// encrypt the password and it will be decrypted only while signing in
 	return s.userRepo.Create(user)
 }

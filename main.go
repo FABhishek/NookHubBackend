@@ -8,6 +8,7 @@ import (
 	"Nookhub/routes"
 	"Nookhub/services"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +22,8 @@ func main() {
 	// Create a new Gin router
 	r := gin.Default()
 
+	// cors
+	r.Use(cors.Default())
 	// Setup dependency injections
 	userRepo := repositories.NewUserRepository(db.DB)
 	userService := services.NewUserService(userRepo)
