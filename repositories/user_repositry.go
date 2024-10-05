@@ -7,7 +7,8 @@ import (
 )
 
 type UserRepository interface {
-	Create(user models.User) (int, error)
+	CreateUser(user models.RegisterUser) (int, error)
+	LoginUser(user models.LoginUser) (int, error)
 }
 
 type userRepository struct {
@@ -18,7 +19,7 @@ func NewUserRepository(db *sql.DB) UserRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) Create(user models.User) (int, error) {
+func (r *userRepository) CreateUser(user models.RegisterUser) (int, error) {
 	// Create a variable to store the OUT parameter
 	var userId int
 
@@ -42,5 +43,14 @@ func (r *userRepository) Create(user models.User) (int, error) {
 		return 0, fmt.Errorf("error retrieving user ID: %w", err)
 	}
 
+	return userId, nil
+}
+
+func (r *userRepository) LoginUser(user models.LoginUser) (int, error) {
+	userId := 0
+	//call the procedure
+	// return if  userId < 0 // if email isn't there then user doesn't exist plz singunp
+	// in case if email exists then return the encrypted password with encryption key and decrypt in sv layer obv
+	// if it matches then return success else "wrong password entered"\
 	return userId, nil
 }

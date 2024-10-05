@@ -25,8 +25,10 @@ func Initialize() {
 	}
 
 	if err = DB.Ping(); err != nil {
+		fmt.Println(dsn)
 		panic("Database connection error: " + err.Error())
 	}
 
+	fmt.Print(dsn)
 	fmt.Print("DB connection established successfully\n\n")
 }
