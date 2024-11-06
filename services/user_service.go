@@ -31,6 +31,7 @@ func (s *userService) RegisterUser(user models.RegisterUser) (int, error) {
 	return s.userRepo.CreateUser(user)
 }
 
+// we will get all the users from server to client side to filter it on client side only, inefficient but okay for small amt of data
 func (s *userService) LoginUser(user models.LoginUser) (int, error) {
 
 	return s.userRepo.LoginUser(user)
