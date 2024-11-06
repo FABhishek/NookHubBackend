@@ -5,21 +5,22 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB
 
 func Initialize() {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+	// connStr := "user=username password=password dbname=mydatabase host=localhost sslmode=disable"
+	dsn := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s",
 		config.GetString("user"),
 		config.GetString("password"),
+		config.GetString("name"),
 		config.GetString("host"),
-		config.GetString("port"),
-		config.GetString("name"))
+		config.GetString("port"))
 
 	var err error
-	DB, err = sql.Open("mysql", dsn)
+	DB, err = sql.Open("postgres", dsn)
 	if err != nil {
 		panic("Failed to connect to database: " + err.Error())
 	}

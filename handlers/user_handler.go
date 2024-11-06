@@ -23,9 +23,11 @@ func NewUserHandler(userService services.UserService) UserHandler {
 	return &userHandler{userService: userService}
 }
 
-// API can return following http Responses
-// 403: forbidded: User already registerd
-// 200: success: successfully registered
+/*
+API can return following http Responses
+403: forbidded: User already registerd
+200: success: successfully registered
+*/
 func (h *userHandler) RegisterUser(c *gin.Context) {
 	var user models.RegisterUser
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -44,9 +46,11 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": message})
 }
 
-// API can return following http Responses
-// 403: forbidded: wrong email/password provied
-// 200: success: successfully logged in
+/*
+API can return following http Responses
+403: forbidded: wrong email/password provied
+200: success: successfully logged in
+*/
 func (h *userHandler) LoginUser(c *gin.Context) {
 	var user models.LoginUser
 	if err := c.ShouldBindJSON(&user); err != nil {
