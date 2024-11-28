@@ -13,6 +13,7 @@ import (
 type UserHandler interface {
 	RegisterUser(c *gin.Context)
 	LoginUser(c *gin.Context)
+	IsEmailOrUsernameAvailable(c *gin.Context)
 }
 
 type userHandler struct {
@@ -33,6 +34,10 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
+	}
+
+	if isAnyEmpty(user.Username, user.Username, user.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input, either of the required param is empty"})
 	}
 
 	userId, err := h.userService.RegisterUser(user)
@@ -58,6 +63,10 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
+	if isAnyEmpty(user.Username, user.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input, either of the required param is empty"})
+	}
+
 	userId, err := h.userService.LoginUser(user)
 
 	if err != nil {
@@ -72,4 +81,46 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 	// if(storedPassword != user.Password){ wrong password entered. }
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logged in successfully"})
+}
+
+func (h *userHandler) IsEmailOrUsernameAvailable(c *gin.Context) {
+
+	email := c.DefaultQuery("email", "")
+	username := c.DefaultQuery("username", "")
+
+	if isAnyEmpty(email) && isAnyEmpty(username) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": `Invalid, input cannot be empty`})
+	}
+
+	var inputType string
+	var input string
+	if isAnyEmpty(email) {
+		inputType = "username"
+		input = username
+	} else {
+		inputType = "email"
+		input = email
+	}
+
+	isValid, err := h.userService.IsAvailable(input, inputType)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if isValid {
+		c.JSON(http.StatusOK, gin.H{"Valid": true})
+		return
+	} else {
+		c.JSON(http.StatusConflict, gin.H{"Valid": false})
+		return
+	}
+}
+
+func isAnyEmpty(strings ...string) bool {
+	for _, str := range strings {
+		if str == "" {
+			return true
+		}
+	}
+	return false
 }

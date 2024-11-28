@@ -13,6 +13,7 @@ func SetupRoutes(router *gin.Engine, userHandler handlers.UserHandler) {
 		{
 			user.POST("/register", userHandler.RegisterUser)
 			user.GET("/login", userHandler.LoginUser)
+			user.GET("/inputAvailable", userHandler.IsEmailOrUsernameAvailable)
 		}
 	}
 }
