@@ -11,6 +11,7 @@ import (
 type UserService interface {
 	RegisterUser(user models.RegisterUser) (int, error)
 	LoginUser(user models.LoginUser) (int, error)
+	IsAvailable(input string, inputType string) (bool, error)
 }
 
 type userService struct {
@@ -23,7 +24,7 @@ func NewUserService(userRepo repositories.UserRepository) UserService {
 
 func (s *userService) RegisterUser(user models.RegisterUser) (int, error) {
 
-	hashedPassword, err := HashPassword(user.Password)
+	hashedPassword, err := hashPassword(user.Password)
 	if err != nil {
 		return 0, fmt.Errorf("problem creating the hash of password: %w", err)
 	}
@@ -33,11 +34,15 @@ func (s *userService) RegisterUser(user models.RegisterUser) (int, error) {
 
 // we will get all the users from server to client side to filter it on client side only, inefficient but okay for small amt of data
 func (s *userService) LoginUser(user models.LoginUser) (int, error) {
-
 	return s.userRepo.LoginUser(user)
 }
 
-func HashPassword(password string) (string, error) {
+// EmailChecker implements UserService.
+func (s *userService) IsAvailable(input string, inputType string) (bool, error) {
+	return s.userRepo.IsAvailable(input, inputType)
+}
+
+func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }

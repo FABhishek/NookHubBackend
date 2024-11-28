@@ -9,6 +9,7 @@ import (
 type UserRepository interface {
 	CreateUser(user models.RegisterUser) (int, error)
 	LoginUser(user models.LoginUser) (int, error)
+	IsAvailable(input string, inputType string) (bool, error)
 }
 
 type userRepository struct {
@@ -46,4 +47,29 @@ func (r *userRepository) LoginUser(user models.LoginUser) (int, error) {
 	// in case if email exists then return the encrypted password with encryption key and decrypt in sv layer obv
 	// if it matches then return success else "wrong password entered"\
 	return userId, nil
+}
+
+// EmailChecker implements UserRepository.
+func (r *userRepository) IsAvailable(input string, inputType string) (bool, error) {
+	var isValid bool
+
+	var stmt *sql.Stmt
+	var err error
+	if inputType == "email" {
+		stmt, err = r.db.Prepare("SELECT func_CheckEmail($1)")
+	} else {
+		stmt, err = r.db.Prepare("SELECT func_CheckUsername($1)")
+	}
+
+	if err != nil {
+		return false, fmt.Errorf("error preparing statement: %w", err)
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(input).Scan(&isValid)
+	if err != nil {
+		return false, fmt.Errorf("error executing function: %w", err)
+	}
+
+	return isValid, nil
 }
