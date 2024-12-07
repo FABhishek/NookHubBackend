@@ -8,7 +8,7 @@ import (
 
 type UserRepository interface {
 	CreateUser(user models.RegisterUser) (int, error)
-	LoginUser(user models.LoginUser) (int, error)
+	LoginUser(user models.LoginUser) (string, string, int, error)
 	IsAvailable(input string, inputType string) (bool, error)
 }
 
@@ -40,13 +40,25 @@ func (r *userRepository) CreateUser(user models.RegisterUser) (int, error) {
 	return userId, nil
 }
 
-func (r *userRepository) LoginUser(user models.LoginUser) (int, error) {
+func (r *userRepository) LoginUser(user models.LoginUser) (string, string, int, error) {
+
+	var passwordHash string
+	var username string
 	userId := 0
-	//call the procedure
-	// return if  userId < 0 // if email isn't there then user doesn't exist plz singunp
-	// in case if email exists then return the encrypted password with encryption key and decrypt in sv layer obv
-	// if it matches then return success else "wrong password entered"\
-	return userId, nil
+	stmt, err := r.db.Prepare("Select * From func_getUserLoginData($1)")
+	if err != nil {
+		return passwordHash, username, userId, fmt.Errorf("error executing function: %w", err)
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(user.Email).Scan(&passwordHash, &username, &userId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return passwordHash, username, userId, err
+		}
+		return passwordHash, username, userId, fmt.Errorf("error executing function: %w", err)
+	}
+	return passwordHash, username, userId, nil
 }
 
 // EmailChecker implements UserRepository.
