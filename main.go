@@ -4,6 +4,7 @@ import (
 	"Nookhub/config"
 	"Nookhub/db"
 	"Nookhub/handlers"
+
 	"Nookhub/repositories"
 	"Nookhub/routes"
 	"Nookhub/services"
@@ -24,13 +25,17 @@ func main() {
 
 	// cors
 	r.Use(cors.Default())
-	// Setup dependency injections
-	userRepo := repositories.NewUserRepository(db.DB)
-	userService := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
+	// Setup dependency injections for signup
+	signupRepository := repositories.NewSignupRepository(db.DB)
+	signupService := services.NewSignupService(signupRepository)
+	signupHandler := handlers.NewSignupHandler(signupService)
 
+	// Setup dependency injections for friends
+	friendsRepository := repositories.NewFriendsRepository(db.DB)
+	friendsService := services.NewFriendsService(friendsRepository)
+	friendsHandler := handlers.NewFriendsHandler(friendsService)
 	// Setup routes
-	routes.SetupRoutes(r, userHandler)
+	routes.SetupRoutes(r, signupHandler, friendsHandler)
 
 	// Start the server
 	r.Run(":8080")
