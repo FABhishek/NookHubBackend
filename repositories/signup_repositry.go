@@ -6,21 +6,21 @@ import (
 	"fmt"
 )
 
-type UserRepository interface {
+type SignupRepository interface {
 	CreateUser(user models.RegisterUser) (int, error)
 	LoginUser(user models.LoginUser) (string, string, int, error)
 	IsAvailable(input string, inputType string) (bool, error)
 }
 
-type userRepository struct {
+type signupRepository struct {
 	db *sql.DB
 }
 
-func NewUserRepository(db *sql.DB) UserRepository {
-	return &userRepository{db: db}
+func NewSignupRepository(db *sql.DB) *signupRepository {
+	return &signupRepository{db: db}
 }
 
-func (r *userRepository) CreateUser(user models.RegisterUser) (int, error) {
+func (r *signupRepository) CreateUser(user models.RegisterUser) (int, error) {
 	// Create a variable to store the OUT parameter
 	var userId int
 
@@ -40,7 +40,7 @@ func (r *userRepository) CreateUser(user models.RegisterUser) (int, error) {
 	return userId, nil
 }
 
-func (r *userRepository) LoginUser(user models.LoginUser) (string, string, int, error) {
+func (r *signupRepository) LoginUser(user models.LoginUser) (string, string, int, error) {
 
 	var passwordHash string
 	var username string
@@ -62,7 +62,7 @@ func (r *userRepository) LoginUser(user models.LoginUser) (string, string, int, 
 }
 
 // EmailChecker implements UserRepository.
-func (r *userRepository) IsAvailable(input string, inputType string) (bool, error) {
+func (r *signupRepository) IsAvailable(input string, inputType string) (bool, error) {
 	var isValid bool
 
 	var stmt *sql.Stmt

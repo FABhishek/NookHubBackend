@@ -10,18 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserHandler interface {
+type SignupHandler interface {
 	RegisterUser(c *gin.Context)
 	LoginUser(c *gin.Context)
 	IsEmailOrUsernameAvailable(c *gin.Context)
 }
 
-type userHandler struct {
-	userService services.UserService
+type signupHandler struct {
+	signupService services.SignupService
 }
 
-func NewUserHandler(userService services.UserService) UserHandler {
-	return &userHandler{userService: userService}
+func NewSignupHandler(signupService services.SignupService) SignupHandler {
+	return &signupHandler{signupService: signupService}
 }
 
 // signup  related APIs
@@ -30,7 +30,7 @@ API can return following http Responses
 403: forbidded: User already registerd
 200: success: successfully registered
 */
-func (h *userHandler) RegisterUser(c *gin.Context) {
+func (h *signupHandler) RegisterUser(c *gin.Context) {
 	var user models.RegisterUser
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
@@ -42,7 +42,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	userId, err := h.userService.RegisterUser(user)
+	userId, err := h.signupService.RegisterUser(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -53,7 +53,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": message})
 }
 
-func (h *userHandler) IsEmailOrUsernameAvailable(c *gin.Context) {
+func (h *signupHandler) IsEmailOrUsernameAvailable(c *gin.Context) {
 
 	email := c.DefaultQuery("email", "")
 	username := c.DefaultQuery("username", "")
@@ -72,7 +72,7 @@ func (h *userHandler) IsEmailOrUsernameAvailable(c *gin.Context) {
 		input = email
 	}
 
-	isValid, err := h.userService.IsAvailable(input, inputType)
+	isValid, err := h.signupService.IsAvailable(input, inputType)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -92,7 +92,7 @@ API can return following http Responses
 403: forbidded: wrong email/password provied
 200: success: successfully logged in
 */
-func (h *userHandler) LoginUser(c *gin.Context) {
+func (h *signupHandler) LoginUser(c *gin.Context) {
 	var user models.LoginUser
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
@@ -103,7 +103,7 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input, either of the required param is empty"})
 	}
 
-	username, userId, err := h.userService.LoginUser(user)
+	username, userId, err := h.signupService.LoginUser(user)
 
 	if userId <= 0 && err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("User not registered, please register: %s", err)})
