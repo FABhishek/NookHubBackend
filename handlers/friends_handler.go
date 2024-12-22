@@ -3,7 +3,6 @@ package handlers
 import (
 	"Nookhub/services"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,20 +24,20 @@ func NewFriendsHandler(friendsService services.FriendsService) *friendsHandler {
 
 // FetchFriends implements FriendsRepository.
 func (h *friendsHandler) FetchFriends(c *gin.Context) {
-	userId := c.DefaultQuery("userid", "")
-	id, err := strconv.Atoi(userId)
+	userId, exists := c.Get("user_id")
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "There is some issue while processing the given user"})
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
 	}
 
-	friendList, err := h.friendsService.FetchFriends(id)
+	friendList, err := h.friendsService.FetchFriends(userId.(int))
 
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"FriendList": friendList})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
 		return
 	} else {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
+		c.JSON(http.StatusOK, gin.H{"FriendList": friendList.Friends})
 		return
 	}
 }

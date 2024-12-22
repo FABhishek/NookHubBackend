@@ -6,8 +6,8 @@ import (
 )
 
 type FriendsService interface {
-	FetchFriends(input int) (models.FriendList, error)
-	FindFriend(input int) (models.FriendList, error)
+	FetchFriends(userId int) (models.FriendList, error)
+	FindFriend(input int) (models.FriendList, error) // its about searching other users, will rename
 	AddFriend(friend models.Friend)
 	RequestStatus(friend models.Friend)
 }
@@ -17,8 +17,8 @@ type friendsService struct {
 }
 
 // FetchFriends implements FriendsService.
-func (f *friendsService) FetchFriends(input int) (models.FriendList, error) {
-	panic("unimplemented")
+func (f *friendsService) FetchFriends(userId int) (models.FriendList, error) {
+	return f.friendsRepository.FetchFriends(userId)
 }
 
 // AddFriend implements FriendsService.

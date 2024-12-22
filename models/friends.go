@@ -14,5 +14,5 @@ type Friend struct {
 }
 
 type FriendList struct {
-	Friends []Friend
+	Friends []Friend `json:"friends"`
 }

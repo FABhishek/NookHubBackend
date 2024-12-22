@@ -3,12 +3,14 @@ package handlers
 import (
 	"Nookhub/models"
 	"Nookhub/services"
-	"net/http"
-
+	jwtutil "Nookhub/utilities"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
+
+const passwordNotMatched = "existsButPWNotMatched"
 
 type SignupHandler interface {
 	RegisterUser(c *gin.Context)
@@ -51,6 +53,19 @@ func (h *signupHandler) RegisterUser(c *gin.Context) {
 	message := fmt.Sprintf("User registered successfully with ID %d", userId)
 
 	c.JSON(http.StatusOK, gin.H{"message": message})
+
+	tokenString, err := jwtutil.CreateToken(user.Username, userId)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error creating the authentication token")
+	}
+	c.SetCookie(
+		"token",
+		tokenString,
+		3600,
+		"/",
+		"localhost",
+		false, //make sure to make it true later in https
+		true)
 }
 
 func (h *signupHandler) IsEmailOrUsernameAvailable(c *gin.Context) {
@@ -108,11 +123,23 @@ func (h *signupHandler) LoginUser(c *gin.Context) {
 	if userId <= 0 && err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("User not registered, please register: %s", err)})
 		return
-	} else if userId > 0 && username == "existsButPWNotMatched" {
+	} else if userId > 0 && username == passwordNotMatched {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": fmt.Sprintf("Wrong password entered %s", err)})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"username": username, "userId": userId})
+	tokenString, err := jwtutil.CreateToken(username, userId)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error creating the authentication token")
+	}
+	c.SetCookie(
+		"token",
+		tokenString,
+		3600,
+		"/",
+		"localhost",
+		false, //make sure to make it true later in https
+		true)
+	c.JSON(http.StatusOK, gin.H{"username": username, "userId": userId, "message": "User successfully logged in and cookies have been set 😋"})
 }
 
 // private functions
