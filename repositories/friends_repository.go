@@ -9,7 +9,7 @@ import (
 type FriendsRepository interface {
 	FetchFriends(userId int) (models.FriendList, error)
 	FindFriend(input int) (models.FriendList, error)
-	AddFriend(friend models.Friend)
+	AddFriend(friendrequest models.FriendRequest) (bool, error)
 	RequestStatus(friend models.Friend)
 }
 
@@ -53,8 +53,22 @@ func (r *friendsRepository) FetchFriends(userId int) (models.FriendList, error) 
 }
 
 // AddFriend implements FriendsRepository.
-func (s *friendsRepository) AddFriend(friend models.Friend) {
-	panic("unimplemented")
+func (r *friendsRepository) AddFriend(friendrequest models.FriendRequest) (bool, error) {
+
+	stmt, err := r.db.Prepare("SELECT func_addFriendRequest($1, $2)")
+	if err != nil {
+		return false, fmt.Errorf("error executing the procedure: %w", err)
+	}
+
+	defer stmt.Close()
+	var success bool
+	err = stmt.QueryRow(friendrequest.UserId, friendrequest.FriendId).Scan(&success)
+
+	if err != nil {
+		return false, fmt.Errorf("some error occured while reading data from DB")
+	} else {
+		return success, err
+	}
 }
 
 // FindFriend implements FriendsRepository.
