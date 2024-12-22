@@ -8,7 +8,7 @@ import (
 type FriendsService interface {
 	FetchFriends(userId int) (models.FriendList, error)
 	FindFriend(input int) (models.FriendList, error) // its about searching other users, will rename
-	AddFriend(friend models.Friend)
+	AddFriend(friendreuest models.FriendRequest) (bool, error)
 	RequestStatus(friend models.Friend)
 }
 
@@ -22,8 +22,8 @@ func (f *friendsService) FetchFriends(userId int) (models.FriendList, error) {
 }
 
 // AddFriend implements FriendsService.
-func (f *friendsService) AddFriend(friend models.Friend) {
-	panic("unimplemented")
+func (f *friendsService) AddFriend(friendrequest models.FriendRequest) (bool, error) {
+	return f.friendsRepository.AddFriend(friendrequest)
 }
 
 // FindFriend implements FriendsService.

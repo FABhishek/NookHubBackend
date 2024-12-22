@@ -1,9 +1,9 @@
 package models
 
 type FriendRequest struct {
-	UserId     string `json:"userid"`
+	UserId     int    `json:"userid"`
 	Username   string `json:"username"` //why do we need names? bhul gya bc
-	FriendId   string `json:"friendid"`
+	FriendId   int    `json:"friendid"`
 	FriendName string `json:"friendname"`
 	Status     string `json:"requeststaus"`
 }
