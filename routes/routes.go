@@ -2,6 +2,7 @@ package routes
 
 import (
 	"Nookhub/handlers"
+	jwtutil "Nookhub/utilities"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +22,7 @@ func SetupRoutes(router *gin.Engine,
 
 		friends := v1.Group("/dashboard/friends")
 		{
-			friends.GET("/fetchfriends", friendsHandler.FetchFriends)
+			friends.GET("/fetchfriends", jwtutil.AuthenticateMiddleware, friendsHandler.FetchFriends)
 			friends.GET("/search", friendsHandler.FindFriend) //local friend search
 			friends.POST("/requestsent", friendsHandler.AddFriend)
 			friends.PUT("/acceptrequest", friendsHandler.RequestStatus)
