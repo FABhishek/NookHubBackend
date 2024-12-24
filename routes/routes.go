@@ -16,7 +16,7 @@ func SetupRoutes(router *gin.Engine,
 		signup := v1.Group("/users")
 		{
 			signup.POST("/register", signupHandler.RegisterUser)
-			signup.GET("/login", signupHandler.LoginUser)
+			signup.POST("/login", signupHandler.LoginUser)
 			signup.GET("/inputAvailable", signupHandler.IsEmailOrUsernameAvailable)
 		}
 
