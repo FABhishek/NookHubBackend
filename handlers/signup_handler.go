@@ -121,7 +121,7 @@ func (h *signupHandler) LoginUser(c *gin.Context) {
 	username, userId, err := h.signupService.LoginUser(user)
 
 	if userId <= 0 && err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("User not registered, please register: %s", err)})
+		c.JSON(http.StatusForbidden, gin.H{"message": "User not registered, please register"})
 		return
 	} else if userId > 0 && username == passwordNotMatched {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": fmt.Sprintf("Wrong password entered %s", err)})
