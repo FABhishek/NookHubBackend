@@ -9,7 +9,7 @@ type FriendRequest struct {
 }
 
 type Friend struct {
-	FriendId   string `json:"friendid"`
+	FriendId   int    `json:"friendid"`
 	FriendName string `json:"friendname"`
 }
 

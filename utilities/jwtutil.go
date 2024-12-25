@@ -44,13 +44,13 @@ func AuthenticateMiddleware(c *gin.Context) {
 	// Verify the token
 	token, err := verifyToken(tokenString)
 	if err != nil {
-		fmt.Printf("Token verification failed: %v\\n", err)
+		fmt.Printf("Token verification failed: %v", err)
 		c.JSON(http.StatusUnauthorized, "Token verification failed")
 		c.Abort()
 		return
 	}
 
-	fmt.Printf("Token verified successfully. Claims: %+v\\n", token.Claims)
+	fmt.Printf("Token verified successfully. Claims: %+v", token.Claims)
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
