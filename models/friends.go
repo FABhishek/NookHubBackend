@@ -9,8 +9,11 @@ type FriendRequest struct {
 }
 
 type Friend struct {
-	FriendId   int    `json:"friendid"`
-	FriendName string `json:"friendname"`
+	FriendId     int     `json:"friendid"`
+	FriendName   string  `json:"friendname"`
+	ProfilePhoto *string `json:"profilephoto"` //nullable
+	ChatId       *string `json:"chatid"`
+	Status       *string `json:"status"`
 }
 
 type FriendList struct {

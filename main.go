@@ -41,9 +41,15 @@ func main() {
 	friendsRepository := repositories.NewFriendsRepository(db.DB)
 	friendsService := services.NewFriendsService(friendsRepository)
 	friendsHandler := handlers.NewFriendsHandler(friendsService)
+
+	// Setup dependency injection for friendsChat
+	friendChatRepository := repositories.NewFriendChatRepository(db.DB)
+	friendChatService := services.NewFriendChatService(friendChatRepository)
+	friendChatHandler := handlers.NewFriendChatHandler(friendChatService)
+
 	// Setup routes
-	routes.SetupRoutes(router, signupHandler, friendsHandler)
+	routes.SetupRoutes(router, signupHandler, friendsHandler, friendChatHandler)
 
 	// Start the server
-	router.Run(":8080")
+	router.Run("0.0.0.0:8080")
 }

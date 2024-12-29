@@ -7,13 +7,17 @@ import (
 
 type FriendsService interface {
 	FetchFriends(userId int) (models.FriendList, error)
-	FindUser(input string) (models.Friend, error) // its about searching other users, will rename
+	FindUser(friendname string, userid int) (models.Friend, error) // its about searching other users, will rename
 	AddFriend(friendreuest models.FriendRequest) (bool, error)
 	RequestStatus(friend models.FriendRequest) (bool, error)
 }
 
 type friendsService struct {
 	friendsRepository repositories.FriendsRepository
+}
+
+func NewFriendsService(friendsRepository repositories.FriendsRepository) FriendsService {
+	return &friendsService{friendsRepository: friendsRepository}
 }
 
 // FetchFriends implements FriendsService.
@@ -27,15 +31,11 @@ func (f *friendsService) AddFriend(friendrequest models.FriendRequest) (bool, er
 }
 
 // FindFriend implements FriendsService.
-func (f *friendsService) FindUser(username string) (models.Friend, error) {
-	return f.friendsRepository.FindUser(username)
+func (f *friendsService) FindUser(friendname string, userid int) (models.Friend, error) {
+	return f.friendsRepository.FindUser(friendname, userid)
 }
 
 // RequestStatus implements FriendsService.
 func (f *friendsService) RequestStatus(friendrequest models.FriendRequest) (bool, error) {
 	return f.friendsRepository.RequestStatus(friendrequest)
-}
-
-func NewFriendsService(friendsRepository repositories.FriendsRepository) *friendsService {
-	return &friendsService{friendsRepository: friendsRepository}
 }

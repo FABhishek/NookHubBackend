@@ -37,7 +37,7 @@ func (h *friendsHandler) FetchFriends(c *gin.Context) {
 	friendList, err := h.friendsService.FetchFriends(userId)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Something went wrong %v", err)})
 		return
 	} else {
 		c.JSON(http.StatusOK, gin.H{"FriendList": friendList.Friends})
@@ -83,7 +83,7 @@ func (h *friendsHandler) AddFriend(c *gin.Context) {
 func (h *friendsHandler) FindUser(c *gin.Context) {
 	userId := checkCookies(c)
 
-	username := c.DefaultQuery("username", "")
+	friendname := c.DefaultQuery("friendname", "")
 	userid := c.DefaultQuery("userid", "")
 	int_userid, err := strconv.Atoi(userid)
 
@@ -97,12 +97,12 @@ func (h *friendsHandler) FindUser(c *gin.Context) {
 		return
 	}
 
-	if len(username) < 3 || username == "" {
+	if len(friendname) < 3 || friendname == "" {
 		c.JSON(http.StatusBadRequest, "Please enter a valid username")
 		return
 	}
 
-	user, err := h.friendsService.FindUser(username)
+	user, err := h.friendsService.FindUser(friendname, int_userid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
