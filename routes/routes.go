@@ -9,7 +9,8 @@ import (
 
 func SetupRoutes(router *gin.Engine,
 	signupHandler handlers.SignupHandler,
-	friendsHandler handlers.FriendsHandler) {
+	friendsHandler handlers.FriendsHandler,
+	friendChatHandler handlers.FriendChatHandler) {
 
 	v1 := router.Group("/api/v1")
 	{
@@ -27,6 +28,11 @@ func SetupRoutes(router *gin.Engine,
 			friends.POST("/requestsent", jwtutil.AuthenticateMiddleware, friendsHandler.AddFriend)
 			friends.PUT("/requeststatus", jwtutil.AuthenticateMiddleware, friendsHandler.RequestStatus)
 			// we will pass the query param on that basis will delete the entry if request is declined, in put itself
+		}
+
+		friendChat := v1.Group("/dashboard/friends/friendchat")
+		{
+			friendChat.GET("/ws", friendChatHandler.HandleConnections)
 		}
 	}
 }

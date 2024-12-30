@@ -8,13 +8,17 @@ import (
 
 type FriendsRepository interface {
 	FetchFriends(userId int) (models.FriendList, error)
-	FindUser(input string) (models.Friend, error)
+	FindUser(frindname string, userid int) (models.Friend, error)
 	AddFriend(friendrequest models.FriendRequest) (bool, error)
 	RequestStatus(friendrequest models.FriendRequest) (bool, error)
 }
 
 type friendsRepository struct {
 	db *sql.DB
+}
+
+func NewFriendsRepository(db *sql.DB) *friendsRepository {
+	return &friendsRepository{db: db}
 }
 
 // FetchFriends implements FriendsRepository.
@@ -38,7 +42,7 @@ func (r *friendsRepository) FetchFriends(userId int) (models.FriendList, error) 
 
 	for rows.Next() {
 		var friend models.Friend
-		err := rows.Scan(&friend.FriendId, &friend.FriendName)
+		err := rows.Scan(&friend.FriendId, &friend.FriendName, &friend.ChatId, &friend.ProfilePhoto)
 		if err != nil {
 			return models.FriendList{}, fmt.Errorf("error scanning friends 😭: %w", err)
 		}
@@ -72,9 +76,9 @@ func (r *friendsRepository) AddFriend(friendrequest models.FriendRequest) (bool,
 }
 
 // FindFriend implements FriendsRepository.
-func (r *friendsRepository) FindUser(username string) (models.Friend, error) {
+func (r *friendsRepository) FindUser(friendname string, userid int) (models.Friend, error) {
 
-	stmt, err := r.db.Prepare("SELECT * From func_findUser($1)")
+	stmt, err := r.db.Prepare("SELECT * From func_findUser($1, $2)")
 
 	if err != nil {
 		return models.Friend{}, fmt.Errorf("error executing the procedure: %w", err)
@@ -82,7 +86,7 @@ func (r *friendsRepository) FindUser(username string) (models.Friend, error) {
 
 	defer stmt.Close()
 	var user models.Friend
-	err = stmt.QueryRow(username).Scan(&user.FriendName, &user.FriendId)
+	err = stmt.QueryRow(friendname, userid).Scan(&user.FriendName, &user.FriendId, &user.ProfilePhoto, &user.Status)
 
 	if err != nil {
 		return models.Friend{}, err
@@ -108,8 +112,4 @@ func (r *friendsRepository) RequestStatus(friendrequest models.FriendRequest) (b
 	} else {
 		return success, err
 	}
-}
-
-func NewFriendsRepository(db *sql.DB) *friendsRepository {
-	return &friendsRepository{db: db}
 }
