@@ -18,10 +18,11 @@ type FriendChatService interface {
 
 type friendChatService struct {
 	friendChatRepository repositories.FriendChatRepository
+	redisClient          *redis.Client
 }
 
-func NewFriendChatService(friendChatRepository repositories.FriendChatRepository) *friendChatService {
-	return &friendChatService{friendChatRepository: friendChatRepository}
+func NewFriendChatService(friendChatRepository repositories.FriendChatRepository, redisClient *redis.Client) *friendChatService {
+	return &friendChatService{friendChatRepository: friendChatRepository, redisClient: redisClient}
 }
 
 var clients = make(map[string]*websocket.Conn)
@@ -30,25 +31,17 @@ func (s *friendChatService) HandleConnections(ws *websocket.Conn, userId string,
 
 	clients[userId] = ws
 	log.Printf(`user connected %s`, userId)
-
-	redisStore := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // No password set
-		DB:       0,  // Use default DB
-		Protocol: 2,  // Connection protocol
-	})
 	ctx := context.Background()
 
 	// will check if user has some messages that got missed while he was away
-
-	check, err := redisStore.Exists(ctx, user+chatId).Result()
+	check, err := s.redisClient.Exists(ctx, user+chatId).Result()
 	if err != nil {
 		log.Printf("value does not exists in redis or got some error while doing operation %v", err)
 	} else if check != 0 {
-		checkIfUserHasSomeMessagesAlready(ctx, ws, user+chatId, redisStore)
+		checkIfUserHasSomeMessagesAlready(ctx, ws, user+chatId, s.redisClient)
 	}
 
-	sendRealTimeMessageToFriend(ctx, ws, redisStore, chatId)
+	sendRealTimeMessageToFriend(ctx, ws, s.redisClient, chatId)
 
 }
 
