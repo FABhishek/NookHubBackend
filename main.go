@@ -9,8 +9,12 @@ import (
 	"Nookhub/routes"
 	"Nookhub/services"
 
+	"context"
+	"log"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -32,6 +36,17 @@ func main() {
 		AllowCredentials: true, // Allow cookies to be sent with cross-origin requests
 	}))
 
+	redisStore := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // No password set
+		DB:       0,  // Use default DB
+	})
+
+	_, err := redisStore.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalf("Could not connect to Redis: %v", err)
+	}
+
 	// Setup dependency injections for signup
 	signupRepository := repositories.NewSignupRepository(db.DB)
 	signupService := services.NewSignupService(signupRepository)
@@ -44,7 +59,7 @@ func main() {
 
 	// Setup dependency injection for friendsChat
 	friendChatRepository := repositories.NewFriendChatRepository(db.DB)
-	friendChatService := services.NewFriendChatService(friendChatRepository)
+	friendChatService := services.NewFriendChatService(friendChatRepository, redisStore)
 	friendChatHandler := handlers.NewFriendChatHandler(friendChatService)
 
 	// Setup routes
