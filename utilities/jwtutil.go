@@ -1,4 +1,4 @@
-package jwtutil
+package utilities
 
 import (
 	"Nookhub/config"

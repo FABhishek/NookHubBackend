@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"Nookhub/services"
+	"strings"
 
 	"log"
 	"net/http"
@@ -33,16 +34,20 @@ var upgrader = websocket.Upgrader{
 func (h *friendChatHandler) HandleConnections(c *gin.Context) {
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("There is an error updgrading the http to ws %v", err)
+		c.JSON(http.StatusInternalServerError, "Some error occuered while upgrading the connection")
 		return
 	}
-	defer ws.Close()
 
+	go h.runSeperately(c, ws) // using go routines, multithreading basically
+}
+
+func (h *friendChatHandler) runSeperately(c *gin.Context, ws *websocket.Conn) {
 	userId := c.Query("userid")
 	chatId := c.Query("chatid")
 	user := c.Query("user")
 
-	if userId == "" {
+	if strings.TrimSpace(userId) == "" {
 		c.JSON(http.StatusBadRequest, "UserId cannot be null or empty")
 		return
 	}
@@ -52,5 +57,6 @@ func (h *friendChatHandler) HandleConnections(c *gin.Context) {
 		log.Printf(`user disconnected %s`, userId)
 	}()
 
+	defer ws.Close()
 	h.friendChatService.HandleConnections(ws, userId, chatId, user)
 }
