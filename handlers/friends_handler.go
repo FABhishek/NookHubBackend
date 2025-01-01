@@ -3,9 +3,10 @@ package handlers
 import (
 	"Nookhub/models"
 	"Nookhub/services"
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -84,27 +85,19 @@ func (h *friendsHandler) FindUser(c *gin.Context) {
 	userId := checkCookies(c)
 
 	friendname := c.DefaultQuery("friendname", "")
-	userid := c.DefaultQuery("userid", "")
-	int_userid, err := strconv.Atoi(userid)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
-		return
-	}
-
-	if userId != int_userid {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Something went wrong please login again"})
-		return
-	}
 
 	if len(friendname) < 3 || friendname == "" {
 		c.JSON(http.StatusBadRequest, "Please enter a valid username")
 		return
 	}
 
-	user, err := h.friendsService.FindUser(friendname, int_userid)
+	user, err := h.friendsService.FindUser(friendname, userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusNoContent, gin.H{"result": fmt.Sprintf("No user with %s found", friendname)})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Some error occuered: %v", err))
 		return
 	} else {
 		c.JSON(http.StatusOK, gin.H{"result": user})

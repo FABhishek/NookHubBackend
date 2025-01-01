@@ -19,7 +19,7 @@ func CreateToken(username string, id int) (string, error) {
 		"sub":     username,
 		"user_id": id,                                    // Subject (user identifier)
 		"iss":     "nookhub",                             // Issuer
-		"exp":     time.Now().Add(time.Hour * 12).Unix(), // Expiration time
+		"exp":     time.Now().Add(time.Hour * 72).Unix(), // Expiration time
 		"iat":     time.Now().Unix(),                     // Issued at
 	})
 
