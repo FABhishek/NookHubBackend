@@ -42,7 +42,7 @@ func (r *friendsRepository) FetchFriends(userId int) (models.FriendList, error) 
 
 	for rows.Next() {
 		var friend models.Friend
-		err := rows.Scan(&friend.FriendId, &friend.FriendName, &friend.ChatId, &friend.ProfilePhoto)
+		err := rows.Scan(&friend.FriendId, &friend.FriendName, &friend.ChatId, &friend.ProfilePhoto, &friend.Status)
 		if err != nil {
 			return models.FriendList{}, fmt.Errorf("error scanning friends 😭: %w", err)
 		}
