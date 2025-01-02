@@ -127,6 +127,10 @@ func (h *friendsHandler) RequestStatus(c *gin.Context) {
 	res, err := h.friendsService.RequestStatus(request)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusNoContent, gin.H{"error": fmt.Sprintf("No friendship relation found between %d and %d", request.UserId, request.FriendId)})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	} else if !res {
