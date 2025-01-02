@@ -16,6 +16,7 @@ type FriendsHandler interface {
 	FindUser(c *gin.Context)      // will fetch the searched user from db
 	AddFriend(c *gin.Context)     // will add the friend and set the status as pending
 	RequestStatus(c *gin.Context) // will update the status of request if approved or declined or withdraw
+	PendingRequests(c *gin.Context)
 }
 
 type friendsHandler struct {
@@ -144,6 +145,20 @@ func (h *friendsHandler) RequestStatus(c *gin.Context) {
 			c.JSON(http.StatusOK, fmt.Sprintf("Friend request declined: %s", request.FriendName))
 			return
 		}
+	}
+}
+
+func (h *friendsHandler) PendingRequests(c *gin.Context) {
+	userId := checkCookies(c)
+
+	PendingRequests, err := h.friendsService.PendingRequests(userId)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Something went wrong %v", err)})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"FriendList": PendingRequests.Friends})
+		return
 	}
 }
 

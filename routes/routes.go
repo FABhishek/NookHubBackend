@@ -27,6 +27,7 @@ func SetupRoutes(router *gin.Engine,
 			friends.GET("/searchuser", jwtutil.AuthenticateMiddleware, friendsHandler.FindUser) //local friend search
 			friends.POST("/requestsent", jwtutil.AuthenticateMiddleware, friendsHandler.AddFriend)
 			friends.PUT("/requeststatus", jwtutil.AuthenticateMiddleware, friendsHandler.RequestStatus)
+			friends.GET("/pendingrequests", jwtutil.AuthenticateMiddleware, friendsHandler.PendingRequests)
 			// we will pass the query param on that basis will delete the entry if request is declined, in put itself
 		}
 

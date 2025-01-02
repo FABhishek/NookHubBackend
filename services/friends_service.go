@@ -10,6 +10,7 @@ type FriendsService interface {
 	FindUser(friendname string, userid int) (models.Friend, error) // its about searching other users, will rename
 	AddFriend(friendreuest models.FriendRequest) (bool, error)
 	RequestStatus(friend models.FriendRequest) (bool, error)
+	PendingRequests(userId int) (models.FriendList, error)
 }
 
 type friendsService struct {
@@ -38,4 +39,8 @@ func (f *friendsService) FindUser(friendname string, userid int) (models.Friend,
 // RequestStatus implements FriendsService.
 func (f *friendsService) RequestStatus(friendrequest models.FriendRequest) (bool, error) {
 	return f.friendsRepository.RequestStatus(friendrequest)
+}
+
+func (f *friendsService) PendingRequests(userId int) (models.FriendList, error) {
+	return f.friendsRepository.PendingRequests(userId)
 }
