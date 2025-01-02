@@ -11,6 +11,7 @@ type FriendsRepository interface {
 	FindUser(frindname string, userid int) (models.Friend, error)
 	AddFriend(friendrequest models.FriendRequest) (bool, error)
 	RequestStatus(friendrequest models.FriendRequest) (bool, error)
+	PendingRequests(userId int) (models.FriendList, error)
 }
 
 type friendsRepository struct {
@@ -112,4 +113,36 @@ func (r *friendsRepository) RequestStatus(friendrequest models.FriendRequest) (b
 	} else {
 		return success, err
 	}
+}
+
+func (r *friendsRepository) PendingRequests(userId int) (models.FriendList, error) {
+	stmt, err := r.db.Prepare("SELECT * from func_getUserPendingRequests($1)")
+	if err != nil {
+		return models.FriendList{}, fmt.Errorf("error preparing statement: %w", err)
+	}
+	defer stmt.Close()
+	var friendList models.FriendList
+	// Retrieve the OUT parameter value
+	rows, err := stmt.Query(userId)
+	if err != nil {
+		return models.FriendList{}, fmt.Errorf("error executing function: %w", err)
+	}
+
+	rows.Columns()
+	defer rows.Close()
+
+	for rows.Next() {
+		var friend models.Friend
+		err := rows.Scan(&friend.FriendId, &friend.FriendName, &friend.ChatId, &friend.ProfilePhoto, &friend.Status)
+		if err != nil {
+			return models.FriendList{}, fmt.Errorf("error scanning pending requests 😭: %w", err)
+		}
+		friendList.Friends = append(friendList.Friends, friend)
+	}
+
+	if err := rows.Err(); err != nil {
+		return models.FriendList{}, fmt.Errorf("some error occured while reading data from DB: %w", err)
+	}
+
+	return friendList, nil
 }
