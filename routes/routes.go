@@ -34,6 +34,7 @@ func SetupRoutes(router *gin.Engine,
 		friendChat := v1.Group("/dashboard/friends/friendchat")
 		{
 			friendChat.GET("/ws", friendChatHandler.HandleConnections)
+			friendChat.GET("/:chatid/messages", friendChatHandler.RetreiveMessages)
 		}
 	}
 }

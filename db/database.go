@@ -4,11 +4,21 @@ import (
 	"Nookhub/config"
 	"database/sql"
 	"fmt"
+	"os"
 
+	"log"
+
+	"cloud.google.com/go/firestore"
 	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB
+var FirebaseClient *firestore.Client
+var ConfigData []byte
+
+const (
+	firebaseConfigFile = "firebaseconfig.json"
+)
 
 func Initialize() {
 	// connStr := "user=username password=password dbname=mydatabase host=localhost sslmode=disable"
@@ -31,5 +41,11 @@ func Initialize() {
 	}
 
 	fmt.Print(dsn)
-	fmt.Print("DB connection established successfully\n\n")
+	fmt.Print("Postgres DB connection established successfully\n\n")
+
+	//firebase
+	ConfigData, err = os.ReadFile(firebaseConfigFile)
+	if err != nil {
+		log.Fatalf("Failed to read service account file: %v", err)
+	}
 }

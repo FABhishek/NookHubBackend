@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"Nookhub/services"
+	"fmt"
 	"strings"
 
 	"log"
@@ -13,6 +14,7 @@ import (
 
 type FriendChatHandler interface {
 	HandleConnections(c *gin.Context)
+	RetreiveMessages(c *gin.Context)
 }
 
 type friendChatHandler struct {
@@ -29,6 +31,19 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true // Allow all connections;
 	},
+}
+
+func (h *friendChatHandler) RetreiveMessages(c *gin.Context) {
+	chatid := c.Param("chatid")
+	startAfter := c.DefaultQuery("startAfter", "")
+
+	data, err := h.friendChatService.RetreiveMessages(chatid, startAfter)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Some error occured: %v", err))
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
 func (h *friendChatHandler) HandleConnections(c *gin.Context) {
