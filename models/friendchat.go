@@ -14,3 +14,9 @@ type Chat struct {
 	Text string
 	Date time.Time
 }
+
+type MessageData struct {
+	Sender  string
+	Message string
+	Date    string
+}

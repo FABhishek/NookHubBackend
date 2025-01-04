@@ -12,11 +12,11 @@ import (
 )
 
 type FriendsHandler interface {
-	FetchFriends(c *gin.Context)  // will fetch the user's friends
-	FindUser(c *gin.Context)      // will fetch the searched user from db
-	AddFriend(c *gin.Context)     // will add the friend and set the status as pending
-	RequestStatus(c *gin.Context) // will update the status of request if approved or declined or withdraw
-	PendingRequests(c *gin.Context)
+	FetchFriends(c *gin.Context)    // will fetch the user's friends
+	FindUser(c *gin.Context)        // will fetch the searched user from db
+	AddFriend(c *gin.Context)       // will add the friend and set the status as pending
+	RequestStatus(c *gin.Context)   // will update the status of request if approved or declined or withdraw
+	PendingRequests(c *gin.Context) //will fetch the friend requests in pending status
 }
 
 type friendsHandler struct {
@@ -51,6 +51,7 @@ func (h *friendsHandler) FetchFriends(c *gin.Context) {
 // API can return following http Responses
 // 401: unauthorized: authentication issue
 // 200: success: successfully sent the request
+// 403: Bad request
 func (h *friendsHandler) AddFriend(c *gin.Context) {
 	userId := checkCookies(c)
 
@@ -110,6 +111,8 @@ func (h *friendsHandler) FindUser(c *gin.Context) {
 // API can return following http Responses
 // 401: unauthorized: authentication issue
 // 200: success: accepted or rejected the request
+// 204: No content
+// 403: Bad request
 func (h *friendsHandler) RequestStatus(c *gin.Context) {
 	userId := checkCookies(c)
 
@@ -148,6 +151,9 @@ func (h *friendsHandler) RequestStatus(c *gin.Context) {
 	}
 }
 
+// API can return following http Responses
+// 401: unauthorized: authentication issue
+// 200: success: accepted or rejected the request
 func (h *friendsHandler) PendingRequests(c *gin.Context) {
 	userId := checkCookies(c)
 

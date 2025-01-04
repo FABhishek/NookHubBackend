@@ -14,6 +14,7 @@ import (
 
 type FriendChatService interface {
 	HandleConnections(ws *websocket.Conn, userId string, chatId string, user string)
+	RetreiveMessages(chatid string, stattAfter string) ([]models.MessageData, error)
 }
 
 type friendChatService struct {
@@ -21,8 +22,12 @@ type friendChatService struct {
 	redisClient          *redis.Client
 }
 
-func NewFriendChatService(friendChatRepository repositories.FriendChatRepository, redisClient *redis.Client) *friendChatService {
-	return &friendChatService{friendChatRepository: friendChatRepository, redisClient: redisClient}
+func NewFriendChatService(
+	friendChatRepository repositories.FriendChatRepository,
+	redisClient *redis.Client) *friendChatService {
+	return &friendChatService{
+		friendChatRepository: friendChatRepository,
+		redisClient:          redisClient}
 }
 
 var clients = make(map[string]*websocket.Conn)
@@ -41,8 +46,16 @@ func (s *friendChatService) HandleConnections(ws *websocket.Conn, userId string,
 		checkIfUserHasSomeMessagesAlready(ctx, ws, user+chatId, s.redisClient)
 	}
 
-	sendRealTimeMessageToFriend(ctx, ws, s.redisClient, chatId)
+	s.sendRealTimeMessageToFriend(ctx, ws, s.redisClient, chatId)
 
+}
+
+func (s *friendChatService) RetreiveMessages(chatid string, startAfter string) ([]models.MessageData, error) {
+	res, err := s.friendChatRepository.RetreiveMessages(chatid, startAfter)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func checkIfUserHasSomeMessagesAlready(ctx context.Context, ws *websocket.Conn, userChatId string, redisStore *redis.Client) {
@@ -61,7 +74,7 @@ func checkIfUserHasSomeMessagesAlready(ctx context.Context, ws *websocket.Conn, 
 
 }
 
-func sendRealTimeMessageToFriend(ctx context.Context, ws *websocket.Conn, redisStore *redis.Client, chatId string) {
+func (s *friendChatService) sendRealTimeMessageToFriend(ctx context.Context, ws *websocket.Conn, redisStore *redis.Client, chatId string) {
 	for {
 		var msg models.FriendChat
 
@@ -82,6 +95,9 @@ func sendRealTimeMessageToFriend(ctx context.Context, ws *websocket.Conn, redisS
 
 			if err != nil {
 				log.Printf("Error sending message to %s: %v", msg.Recipient, err)
+			} else {
+				//store data in db if there is no error to send message
+				s.friendChatRepository.StoreChatData(msg, chatId)
 			}
 		} else {
 			// we will store the messages in redis and db if recipient is unavailable
@@ -89,7 +105,7 @@ func sendRealTimeMessageToFriend(ctx context.Context, ws *websocket.Conn, redisS
 			if err != nil {
 				panic(err)
 			}
-
+			s.friendChatRepository.StoreChatData(msg, chatId)
 			log.Printf("Recipient %s not connected", msg.Recipient)
 		}
 

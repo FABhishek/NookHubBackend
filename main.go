@@ -58,7 +58,7 @@ func main() {
 	friendsHandler := handlers.NewFriendsHandler(friendsService)
 
 	// Setup dependency injection for friendsChat
-	friendChatRepository := repositories.NewFriendChatRepository(db.DB)
+	friendChatRepository := repositories.NewFriendChatRepository(db.FirebaseClient, db.ConfigData)
 	friendChatService := services.NewFriendChatService(friendChatRepository, redisStore)
 	friendChatHandler := handlers.NewFriendChatHandler(friendChatService)
 
