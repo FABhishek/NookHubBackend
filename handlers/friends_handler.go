@@ -3,6 +3,7 @@ package handlers
 import (
 	"Nookhub/models"
 	"Nookhub/services"
+	jwtutil "Nookhub/utilities"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -34,7 +35,7 @@ API can return following http Responses
 200: success: successfully fetched the friends
 */
 func (h *friendsHandler) FetchFriends(c *gin.Context) {
-	userId := checkCookies(c)
+	userId := jwtutil.CheckCookies(c)
 
 	friendList, err := h.friendsService.FetchFriends(userId)
 
@@ -53,7 +54,7 @@ func (h *friendsHandler) FetchFriends(c *gin.Context) {
 // 200: success: successfully sent the request
 // 403: Bad request
 func (h *friendsHandler) AddFriend(c *gin.Context) {
-	userId := checkCookies(c)
+	userId := jwtutil.CheckCookies(c)
 
 	var request models.FriendRequest
 
@@ -84,7 +85,7 @@ func (h *friendsHandler) AddFriend(c *gin.Context) {
 
 // FindFriend implements FriendsRepository.
 func (h *friendsHandler) FindUser(c *gin.Context) {
-	userId := checkCookies(c)
+	userId := jwtutil.CheckCookies(c)
 
 	friendname := c.DefaultQuery("friendname", "")
 
@@ -114,7 +115,7 @@ func (h *friendsHandler) FindUser(c *gin.Context) {
 // 204: No content
 // 403: Bad request
 func (h *friendsHandler) RequestStatus(c *gin.Context) {
-	userId := checkCookies(c)
+	userId := jwtutil.CheckCookies(c)
 
 	var request models.FriendRequest
 
@@ -155,7 +156,7 @@ func (h *friendsHandler) RequestStatus(c *gin.Context) {
 // 401: unauthorized: authentication issue
 // 200: success: accepted or rejected the request
 func (h *friendsHandler) PendingRequests(c *gin.Context) {
-	userId := checkCookies(c)
+	userId := jwtutil.CheckCookies(c)
 
 	PendingRequests, err := h.friendsService.PendingRequests(userId)
 
@@ -166,14 +167,4 @@ func (h *friendsHandler) PendingRequests(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"FriendList": PendingRequests.Friends})
 		return
 	}
-}
-
-func checkCookies(c *gin.Context) int {
-	UserId, exists := c.Get("user_id")
-
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
-		return 0
-	}
-	return UserId.(int)
 }

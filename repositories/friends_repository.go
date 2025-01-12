@@ -26,7 +26,7 @@ func NewFriendsRepository(db *sql.DB) *friendsRepository {
 func (r *friendsRepository) FetchFriends(userId int) (models.FriendList, error) {
 
 	// Prepare the call to the stored procedure
-	stmt, err := r.db.Prepare("SELECT * from func_getUserFriends($1)")
+	stmt, err := r.db.Prepare("SELECT * FROM func_getUserFriends($1)")
 	if err != nil {
 		return models.FriendList{}, fmt.Errorf("error preparing statement: %w", err)
 	}

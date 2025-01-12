@@ -12,3 +12,10 @@ type LoginUser struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type Homies struct {
+	Name    string
+	Id      int
+	Pfp     string
+	IsAdmin bool
+}
