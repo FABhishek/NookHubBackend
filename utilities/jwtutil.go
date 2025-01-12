@@ -86,3 +86,13 @@ func verifyToken(tokenString string) (*jwt.Token, error) {
 
 	return token, nil
 }
+
+func CheckCookies(c *gin.Context) int {
+	UserId, exists := c.Get("user_id")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return 0
+	}
+	return UserId.(int)
+}

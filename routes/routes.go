@@ -10,7 +10,8 @@ import (
 func SetupRoutes(router *gin.Engine,
 	signupHandler handlers.SignupHandler,
 	friendsHandler handlers.FriendsHandler,
-	friendChatHandler handlers.FriendChatHandler) {
+	friendChatHandler handlers.FriendChatHandler,
+	roomsHandler handlers.RoomsHandler) {
 
 	v1 := router.Group("/api/v1")
 	{
@@ -36,5 +37,19 @@ func SetupRoutes(router *gin.Engine,
 			friendChat.GET("/ws", friendChatHandler.HandleConnections)
 			friendChat.GET("/:chatid/messages", friendChatHandler.RetreiveMessages)
 		}
+
+		Rooms := v1.Group("/dashboard/rooms")
+		{
+			Rooms.GET("/", jwtutil.AuthenticateMiddleware, roomsHandler.GetRooms)
+			Rooms.POST("/create", jwtutil.AuthenticateMiddleware, roomsHandler.CreateRoom) // add queryparam as roomname
+			Rooms.GET("/:roomid/gethomies", jwtutil.AuthenticateMiddleware, roomsHandler.GetHomies)
+			Rooms.POST("/join/:roomid", jwtutil.AuthenticateMiddleware, roomsHandler.JoinRoom)
+			Rooms.DELETE("/leave/:roomid", jwtutil.AuthenticateMiddleware, roomsHandler.LeaveRoom)
+			Rooms.DELETE("/deleteroom/:roomid", jwtutil.AuthenticateMiddleware, roomsHandler.LeaveRoom)
+		}
+
+		// RoomChat := v1.Group("/dashboard/rooms/:roomid/chat") {
+
+		// }
 	}
 }

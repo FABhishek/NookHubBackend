@@ -121,10 +121,10 @@ func (h *signupHandler) LoginUser(c *gin.Context) {
 	username, userId, err := h.signupService.LoginUser(user)
 
 	if userId <= 0 && err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"message": "User not registered, please register"})
+		c.JSON(http.StatusForbidden, gin.H{"error": "User not registered, please register"})
 		return
 	} else if userId > 0 && username == passwordNotMatched {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": fmt.Sprintf("Wrong password entered %s", err)})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("Wrong password entered %s", err)})
 		return
 	}
 	tokenString, err := jwtutil.CreateToken(username, userId)
