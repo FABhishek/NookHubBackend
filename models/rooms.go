@@ -1,6 +1,6 @@
 package models
 
-type Rooms struct {
+type Room struct {
 	RoomName string
 	RoomId   int
 	RoomIcon *string

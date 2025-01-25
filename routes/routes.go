@@ -46,6 +46,8 @@ func SetupRoutes(router *gin.Engine,
 			Rooms.POST("/join/:roomid", jwtutil.AuthenticateMiddleware, roomsHandler.JoinRoom)
 			Rooms.DELETE("/leave/:roomid", jwtutil.AuthenticateMiddleware, roomsHandler.LeaveRoom)
 			Rooms.DELETE("/deleteroom/:roomid", jwtutil.AuthenticateMiddleware, roomsHandler.LeaveRoom)
+			Rooms.GET("/searchroom/:roomname", jwtutil.AuthenticateMiddleware, roomsHandler.SearchRoom)
+			//need to make one more debounce api while naming the room when user tries to create new room
 		}
 
 		// RoomChat := v1.Group("/dashboard/rooms/:roomid/chat") {

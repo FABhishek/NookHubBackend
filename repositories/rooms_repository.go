@@ -8,9 +8,13 @@ import (
 )
 
 type RoomsRepository interface {
-	GetRooms(userId int) ([]models.Rooms, error)
-	GetHomies(roomId int) ([]models.Homies, error)
+	GetRooms(userId int) ([]models.Room, error)
 	CreateRoom(createrId int, roomName string) (int, error)
+	JoinRoom(roomId int, userId int) (bool, error)
+	LeaveRoom(roomId int, userId int) (bool, error)
+	DeleteRoom(roomId int, userId int) (bool, error)
+	SearchRoom(roomName string) (models.Room, error)
+	GetHomies(roomId int) ([]models.Homies, error)
 }
 
 type roomsRepository struct {
@@ -21,7 +25,7 @@ func NewRoomsRepository(db *sql.DB) *roomsRepository {
 	return &roomsRepository{db: db}
 }
 
-func (r *roomsRepository) GetRooms(userId int) ([]models.Rooms, error) {
+func (r *roomsRepository) GetRooms(userId int) ([]models.Room, error) {
 	stmt, err := r.db.Prepare("SELECT * FROM func_getRoomsByUser($1)")
 
 	if err != nil {
@@ -36,9 +40,9 @@ func (r *roomsRepository) GetRooms(userId int) ([]models.Rooms, error) {
 		log.Printf("Some error occured while getting rooms: %v", err)
 		return nil, err
 	}
-	var rooms []models.Rooms
+	var rooms []models.Room
 	for rows.Next() {
-		var room models.Rooms
+		var room models.Room
 		err := rows.Scan(&room.RoomId, &room.RoomName, &room.RoomIcon)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching homies 😭: %w", err)
@@ -68,6 +72,90 @@ func (r *roomsRepository) CreateRoom(createrId int, roomName string) (int, error
 	} else {
 		return roomId, err
 	}
+}
+
+func (r *roomsRepository) JoinRoom(roomId int, userId int) (bool, error) {
+	stmt, err := r.db.Prepare("SLECET func_JoinRoom($1, $2)")
+
+	if err != nil {
+		log.Printf("Some error occured while preparing statement %v", err)
+		return false, err
+	}
+
+	defer stmt.Close()
+
+	var joined bool
+	err = stmt.QueryRow(roomId, userId).Scan(&joined)
+
+	if err != nil {
+		log.Printf("Some error occured in DB: %v", err)
+		return false, err
+	}
+
+	return joined, err
+}
+
+func (r *roomsRepository) LeaveRoom(roomId int, userId int) (bool, error) {
+	stmt, err := r.db.Prepare("SLECET func_LeaveRoom($1, $2)")
+
+	if err != nil {
+		log.Printf("Some error occured while preparing statement %v", err)
+		return false, err
+	}
+
+	defer stmt.Close()
+
+	var left bool
+	err = stmt.QueryRow(roomId, userId).Scan(&left)
+
+	if err != nil {
+		log.Printf("Some error occured in DB: %v", err)
+		return false, err
+	}
+
+	return left, err
+}
+
+func (r *roomsRepository) DeleteRoom(roomId int, userId int) (bool, error) {
+	stmt, err := r.db.Prepare("SLECET func_DeleteRoom($1, $2)")
+
+	if err != nil {
+		log.Printf("Some error occured while preparing statement %v", err)
+		return false, err
+	}
+
+	defer stmt.Close()
+
+	var isDeleted bool
+	err = stmt.QueryRow(roomId, userId).Scan(&isDeleted)
+
+	if err != nil {
+		log.Printf("Some error occured in DB: %v", err)
+		return false, err
+	}
+
+	return isDeleted, err
+}
+
+func (r *roomsRepository) SearchRoom(roomName string) (models.Room, error) {
+	stmt, err := r.db.Prepare("SLECET func_SearchRoom($1)")
+
+	if err != nil {
+		log.Printf("Some error occured while preparing statement %v", err)
+		return models.Room{}, err
+	}
+
+	defer stmt.Close()
+
+	var room models.Room
+	err = stmt.QueryRow(roomName).Scan(&room)
+
+	if err != nil {
+		log.Printf("Some error occured in DB: %v", err)
+		return models.Room{}, err
+	}
+
+	return room, err
 }
 
 func (r *roomsRepository) GetHomies(roomId int) ([]models.Homies, error) {
