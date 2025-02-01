@@ -20,6 +20,7 @@ type RoomsHandler interface {
 	DeleteRoom(c *gin.Context) // delete room can only be performed by admin
 	SearchRoom(c *gin.Context)
 	GetHomies(c *gin.Context) // will get all the participants in a room
+	IsRoomAvailable(c *gin.Context)
 }
 
 type roomsHandler struct {
@@ -52,6 +53,9 @@ func (h *roomsHandler) CreateRoom(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("some error occuered: %v", err)})
+		return
+	} else if roomId == -1 {
+		c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("room with similar name might already exists, try different name: %v", err)})
 		return
 	} else {
 		c.JSON(http.StatusOK, fmt.Sprintf("room created successfully with name: %s and Id: %d", roomName, roomId))
@@ -89,10 +93,10 @@ func (h *roomsHandler) LeaveRoom(c *gin.Context) {
 
 	if err != nil {
 		if !left {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "please try again after refreshing"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("user %d sucessfully left the room %d", userId, roomId_No)})
@@ -101,8 +105,18 @@ func (h *roomsHandler) LeaveRoom(c *gin.Context) {
 // only admin can delete room
 func (h *roomsHandler) DeleteRoom(c *gin.Context) {
 	roomId := c.Param("roomid")
-	roomId_No, _ := strconv.Atoi(roomId)
+	roomId_No, err := strconv.Atoi(roomId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Inavalid room id provided make sure it's an integer"})
+		return
+	}
 	userId := jwtutil.CheckCookies(c)
+
+	isRoomValid := h.roomsService.CheckRoomIdentity(roomId_No)
+	if !isRoomValid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Inavalid room id provided, room with id %d doesn't exist", roomId_No)})
+		return
+	}
 
 	isDeleted, err := h.roomsService.DeleteRoom(roomId_No, userId)
 
@@ -110,11 +124,10 @@ func (h *roomsHandler) DeleteRoom(c *gin.Context) {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		}
-		if !isDeleted {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "You don't have the perms to delete, please ask admin to do so"})
-			return
-		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	} else if !isDeleted {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "You don't have the perms to delete, please ask admin to do so"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("sucessfully deleted the room %d", roomId_No)})
@@ -146,5 +159,18 @@ func (h *roomsHandler) GetHomies(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"Homies": homies})
+	}
+}
+
+func (h *roomsHandler) IsRoomAvailable(c *gin.Context) {
+	roomname := c.DefaultQuery("roomname", "")
+
+	availability, err := h.roomsService.IsRoomAvailable(roomname)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	} else if !availability {
+		c.JSON(http.StatusConflict, gin.H{"message": fmt.Sprintf("room with name: %s already exists please give different name", roomname)})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "room name available"})
 	}
 }

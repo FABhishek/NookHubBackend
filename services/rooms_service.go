@@ -3,6 +3,7 @@ package services
 import (
 	"Nookhub/models"
 	"Nookhub/repositories"
+	"fmt"
 )
 
 type RoomsService interface {
@@ -13,6 +14,8 @@ type RoomsService interface {
 	DeleteRoom(roomId int, userId int) (bool, error)
 	SearchRoom(roomName string) (models.Room, error)
 	GetHomies(roomId int) ([]models.Homies, error)
+	CheckRoomIdentity(roomId int) bool
+	IsRoomAvailable(roomname string) (bool, error)
 }
 
 type roomsService struct {
@@ -36,6 +39,11 @@ func (s *roomsService) JoinRoom(roomId int, userId int) (bool, error) {
 }
 
 func (s *roomsService) LeaveRoom(roomId int, userId int) (bool, error) {
+	//check if user is admin of that particular room
+	var isAdmin = s.roomsRepository.IsAdmin(roomId, userId)
+	if isAdmin {
+		return false, fmt.Errorf("please make somene else admin before leaving the room")
+	}
 	return s.roomsRepository.LeaveRoom(roomId, userId)
 }
 
@@ -49,4 +57,13 @@ func (s *roomsService) SearchRoom(roomName string) (models.Room, error) {
 
 func (s *roomsService) GetHomies(roomId int) ([]models.Homies, error) {
 	return s.roomsRepository.GetHomies(roomId)
+}
+
+func (s *roomsService) CheckRoomIdentity(roomId int) bool {
+	isRoomValid := s.roomsRepository.CheckRoomIdentity(roomId)
+	return isRoomValid
+}
+
+func (s *roomsService) IsRoomAvailable(roomname string) (bool, error) {
+	return s.roomsRepository.IsRoomAvailable(roomname)
 }

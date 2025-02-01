@@ -15,6 +15,9 @@ type RoomsRepository interface {
 	DeleteRoom(roomId int, userId int) (bool, error)
 	SearchRoom(roomName string) (models.Room, error)
 	GetHomies(roomId int) ([]models.Homies, error)
+	IsAdmin(roomId int, userId int) bool
+	CheckRoomIdentity(roomId int) bool
+	IsRoomAvailable(roomname string) (bool, error)
 }
 
 type roomsRepository struct {
@@ -55,7 +58,7 @@ func (r *roomsRepository) GetRooms(userId int) ([]models.Room, error) {
 
 func (r *roomsRepository) CreateRoom(createrId int, roomName string) (int, error) {
 	var roomId int
-	stmt, err := r.db.Prepare("Select func_CreateRoom($1, $2)")
+	stmt, err := r.db.Prepare("SELECT func_CreateRoom($1, $2)")
 
 	if err != nil {
 		log.Printf("Some error occured while preparing statement %v", err)
@@ -187,4 +190,49 @@ func (r *roomsRepository) GetHomies(roomId int) ([]models.Homies, error) {
 		homiesList = append(homiesList, user)
 	}
 	return homiesList, err
+}
+
+func (r *roomsRepository) IsAdmin(roomId int, userId int) bool {
+	var admin = -1
+	err := r.db.QueryRow("SELECT admin FROM roomdetails WHERE roomId = $1", roomId).Scan(&admin)
+
+	if err != nil {
+		log.Printf("Some error occured while preparing statement %v", err)
+		return false
+	}
+
+	if admin == userId {
+		return true
+	}
+	return false
+}
+
+func (r *roomsRepository) CheckRoomIdentity(roomId int) bool {
+	var rows = 0
+	err := r.db.QueryRow("SELECT count(*) FROM roomdetails WHERE roomid = $1", roomId).Scan(&rows)
+
+	if err != nil {
+		log.Printf("Some error occured while preparing statement %v", err)
+		return false
+	}
+
+	if rows == 0 {
+		return false
+	}
+	return true
+}
+
+func (r *roomsRepository) IsRoomAvailable(roomname string) (bool, error) {
+	var rows = 0
+	err := r.db.QueryRow("SELECT count(*) FROM roomdetails WHERE roomname = $1", roomname).Scan(&rows)
+
+	if err != nil {
+		log.Printf("Some error occured while preparing statement %v", err)
+		return false, err
+	}
+
+	if rows == 0 {
+		return true, nil
+	}
+	return false, nil
 }
