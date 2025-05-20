@@ -67,8 +67,13 @@ func main() {
 	roomsService := services.NewRoomsService(roomsRepository)
 	roomsHandler := handlers.NewRoomsHandler(roomsService)
 
+	//Setup dependency injection for roomchat
+	roomChatRepository := repositories.NewRoomChatRepository(db.DB, db.ConfigData)
+	roomChatService := services.NewRoomChatService(roomChatRepository, redisStore)
+	roomChatHandler := handlers.NewRoomChatHandler(roomChatService)
+
 	// Setup routes
-	routes.SetupRoutes(router, signupHandler, friendsHandler, friendChatHandler, roomsHandler)
+	routes.SetupRoutes(router, signupHandler, friendsHandler, friendChatHandler, roomsHandler, roomChatHandler)
 
 	// Start the server
 	router.Run("0.0.0.0:8080")

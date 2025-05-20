@@ -69,7 +69,7 @@ func (h *friendChatHandler) runSeperately(c *gin.Context, ws *websocket.Conn) {
 
 	defer func() {
 		delete(clients, userId)
-		log.Printf(`user disconnected %s`, userId)
+		log.Printf("user disconnected %s", userId)
 	}()
 
 	defer ws.Close()
