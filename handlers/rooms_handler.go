@@ -13,14 +13,14 @@ import (
 )
 
 type RoomsHandler interface {
-	GetRooms(c *gin.Context)   // will get the rooms a particular user is participant of
-	CreateRoom(c *gin.Context) // whoever creates the room will be the admin of that room
-	JoinRoom(c *gin.Context)   // will make the user a participant of the room
-	LeaveRoom(c *gin.Context)  // will remove the user from a room
-	DeleteRoom(c *gin.Context) // delete room can only be performed by admin
-	SearchRoom(c *gin.Context)
-	GetHomies(c *gin.Context) // will get all the participants in a room
-	IsRoomAvailable(c *gin.Context)
+	GetRooms(c *gin.Context)        // will get the rooms a particular user is participant of
+	CreateRoom(c *gin.Context)      // whoever creates the room will be the admin of that room
+	JoinRoom(c *gin.Context)        // will make the user a participant of the room
+	LeaveRoom(c *gin.Context)       // will remove the user from a room
+	DeleteRoom(c *gin.Context)      // delete room can only be performed by admin
+	SearchRoom(c *gin.Context)      // will search the room/server publicly
+	GetHomies(c *gin.Context)       // will get all the participants in a room
+	IsRoomAvailable(c *gin.Context) // will check if the room name is available to name any room while creating/renaming.
 }
 
 type roomsHandler struct {

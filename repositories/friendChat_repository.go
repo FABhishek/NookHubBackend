@@ -18,7 +18,7 @@ type FriendChatRepository interface {
 
 type friendChatRepository struct {
 	chatDB     *firestore.Client
-	configData []byte
+	configData []byte // firebase config settings.
 }
 
 func NewFriendChatRepository(chatDB *firestore.Client, configData []byte) *friendChatRepository {

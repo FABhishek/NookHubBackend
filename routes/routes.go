@@ -11,7 +11,8 @@ func SetupRoutes(router *gin.Engine,
 	signupHandler handlers.SignupHandler,
 	friendsHandler handlers.FriendsHandler,
 	friendChatHandler handlers.FriendChatHandler,
-	roomsHandler handlers.RoomsHandler) {
+	roomsHandler handlers.RoomsHandler,
+	roomChatHandler handlers.RoomChatHandler) {
 
 	v1 := router.Group("/api/v1")
 	{
@@ -50,8 +51,9 @@ func SetupRoutes(router *gin.Engine,
 			Rooms.GET("/roomnameAvailability", jwtutil.AuthenticateMiddleware, roomsHandler.IsRoomAvailable) // debounce api to check if room name is available
 		}
 
-		// RoomChat := v1.Group("/dashboard/rooms/:roomid/chat") {
-
-		// }
+		RoomChat := v1.Group("/dashboard/rooms/:roomid/chat")
+		{
+			RoomChat.GET("/ws", roomChatHandler.HandleConnections)
+		}
 	}
 }

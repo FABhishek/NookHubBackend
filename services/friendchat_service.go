@@ -71,7 +71,6 @@ func checkIfUserHasSomeMessagesAlready(ctx context.Context, ws *websocket.Conn, 
 		}
 	}
 	ws.WriteJSON(messages)
-
 }
 
 func (s *friendChatService) sendRealTimeMessageToFriend(ctx context.Context, ws *websocket.Conn, redisStore *redis.Client, chatId string) {
@@ -103,7 +102,7 @@ func (s *friendChatService) sendRealTimeMessageToFriend(ctx context.Context, ws 
 			// we will store the messages in redis and db if recipient is unavailable
 			err := redisStore.LPush(ctx, msg.FriendName+chatId, msg.Content).Err() // will act as queue
 			if err != nil {
-				panic(err)
+				log.Printf("Some error occured while caching the messages to redis.. %v", err)
 			}
 			s.friendChatRepository.StoreChatData(msg, chatId)
 			log.Printf("Recipient %s not connected", msg.Recipient)
